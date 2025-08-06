@@ -1,0 +1,81 @@
+cnt_agents: &cnt_agents 4
+max_turn: &max_turn 3
+max_inner_turns: &max_inner_turns 0
+
+agents:
+  - name: role_assigner_agent
+    agent_type: role_assigner
+    role: role_assigner
+    llm:
+      backbone: llama-local
+      model_name: meta-llama/Llama-3.1-8B-Instruct
+      api_base_url: http://localhost:8000
+      temperature: 0
+      max_tokens: 64
+    prompt_template: |
+      You are a role assigner. Given the task description, assign appropriate agent roles.
+
+  - name: heat_opt_agent
+    agent_type: solver
+    role: heat optimization expert
+    llm:
+      backbone: llama-local
+      model_name: meta-llama/Llama-3.1-8B-Instruct
+      api_base_url: http://localhost:8000
+      temperature: 0
+      max_tokens: 128
+    prompt_template: |
+      {instruction}
+      {input}
+      Only output the numeric value of heat input in the format: Heat input is xxx.xxx.
+
+  - name: energy_eff_agent
+    agent_type: solver
+    role: energy efficiency expert
+    llm:
+      backbone: llama-local
+      model_name: meta-llama/Llama-3.1-8B-Instruct
+      api_base_url: http://localhost:8000
+      temperature: 0
+      max_tokens: 128
+    prompt_template: |
+      {instruction}
+      {input}
+      Only output the numeric value of energy in the format: Energy is xxx.xxx.
+
+  - name: defect_cls_agent
+    agent_type: solver
+    role: welding defect classifier
+    llm:
+      backbone: llama-local
+      model_name: meta-llama/Llama-3.1-8B-Instruct
+      api_base_url: http://localhost:8000
+      temperature: 0
+      max_tokens: 128
+    prompt_template: |
+      {instruction}
+      {input}
+      Possible labels: Balling, Bead cut, Discontinuity, Humping, Lack of fusion, Normal.
+      Select one or more labels if appropriate.
+      If more than one label applies, join your answers with " or " (e.g., Balling or Bead cut).
+      Only answer with the label(s). No explanations.
+
+task:
+  name: waam_multi_task
+  dataset_path:
+    heat_optimization: data/Myexperiments/waam_heat_opt.json
+    energy_efficiency: data/Myexperiments/waam_energy_efficiency.json
+    defect_classification: data/Myexperiments/waam_cls.json
+  description: >
+    Multi-task setup for WAAM domain:
+    1) Heat input prediction,
+    2) Energy efficiency estimation,
+    3) Welding defect classification.
+
+evaluator:
+  name: accuracy
+
+environment:
+  name: task_solving_env
+  env_type: task-basic
+  max_turns: *max_turn
