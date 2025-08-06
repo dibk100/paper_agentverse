@@ -11,8 +11,9 @@ from agentverse.message import Message, ExecutorMessage
 from . import memory_registry
 from .base import BaseMemory
 from agentverse.llms.utils import count_message_tokens, count_string_tokens
-from agentverse.llms import OpenAIChat
-from agentverse.llms.openai import DEFAULT_CLIENT as openai_client
+#from agentverse.llms import OpenAIChat
+#from agentverse.llms.openai import DEFAULT_CLIENT as openai_client
+from agentverse.llms import llm_registry  # HuggingFace 기반 LLM 사용
 
 @memory_registry.register("chat_history")
 class ChatHistoryMemory(BaseMemory):
@@ -59,7 +60,7 @@ Latest Development:
         start_index: int = 0,
         max_summary_length: int = 0,
         max_send_token: int = 0,
-        model: str = "gpt-3.5-turbo",
+        model: str = "llama-3-8b-instruct-hf",  # ✅ 로컬 모델로 기본값 설정
     ) -> List[dict]:
         messages = []
 
@@ -108,7 +109,6 @@ Latest Development:
 
         # summary message
         if self.has_summary:
-            """https://github.com/Significant-Gravitas/AutoGPT/blob/release-v0.4.7/autogpt/memory/message_history.py"""
             if max_summary_length == 0:
                 max_summary_length = self.max_summary_tlength
             max_send_token -= max_summary_length
@@ -149,7 +149,7 @@ Latest Development:
     async def update_running_summary(
         self,
         new_events: List[Dict],
-        model: str = "gpt-3.5-turbo",
+        model: str = "llama-3-8b-instruct-hf",
         max_summary_length: Optional[int] = None,
     ) -> dict:
         if not new_events:
@@ -159,22 +159,20 @@ Latest Development:
 
         new_events = copy.deepcopy(new_events)
 
-        # Replace "assistant" with "you". This produces much better first person past tense results.
         for event in new_events:
             if event["role"].lower() == "assistant":
                 event["role"] = "you"
-
             elif event["role"].lower() == "system":
                 event["role"] = "your computer"
-
-            # Delete all user messages
             elif event["role"] == "user":
                 new_events.remove(event)
 
         prompt_template_length = len(
             self.SUMMARIZATION_PROMPT.format(summary="", new_events="")
         )
-        max_input_tokens = OpenAIChat.send_token_limit(model) - max_summary_length
+        from agentverse.llms.utils import count_string_tokens
+
+        max_input_tokens = 4096  # 적절한 로컬 모델 제한으로 조정 가능
         summary_tlength = count_string_tokens(self.summary, model)
         batch: List[Dict] = []
         batch_tlength = 0
@@ -206,12 +204,15 @@ Latest Development:
             summary=self.summary, new_events=new_events_batch
         )
 
-        self.summary = await openai_client.chat.completions.acreate(
+        # ✅ HuggingFace 기반 로컬 모델 사용
+        llm = llm_registry.get("llama-local")(model=model)
+        response = await llm.acompletion(
             messages=[{"role": "user", "content": prompt}],
-            model=model,
             max_tokens=max_summary_length,
             temperature=0.5,
-        ).choices[0].message.content
+        )
+
+        self.summary = response.content
 
     def summary_message(self) -> dict:
         return {

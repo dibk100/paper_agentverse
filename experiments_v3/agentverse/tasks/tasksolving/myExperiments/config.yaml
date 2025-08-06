@@ -7,11 +7,8 @@ agents:
     agent_type: role_assigner
     role: role_assigner
     llm:
-      backbone: llama-local
+      llm_type: llama-local
       model_name: meta-llama/Llama-3.1-8B-Instruct
-      api_base_url: http://localhost:8000
-      temperature: 0
-      max_tokens: 64
     prompt_template: |
       You are a role assigner. Given the task description, assign appropriate agent roles.
 
@@ -19,11 +16,8 @@ agents:
     agent_type: solver
     role: heat optimization expert
     llm:
-      backbone: llama-local
+      llm_type: llama-local
       model_name: meta-llama/Llama-3.1-8B-Instruct
-      api_base_url: http://localhost:8000
-      temperature: 0
-      max_tokens: 128
     prompt_template: |
       {instruction}
       {input}
@@ -33,11 +27,8 @@ agents:
     agent_type: solver
     role: energy efficiency expert
     llm:
-      backbone: llama-local
+      llm_type: llama-local
       model_name: meta-llama/Llama-3.1-8B-Instruct
-      api_base_url: http://localhost:8000
-      temperature: 0
-      max_tokens: 128
     prompt_template: |
       {instruction}
       {input}
@@ -47,11 +38,8 @@ agents:
     agent_type: solver
     role: welding defect classifier
     llm:
-      backbone: llama-local
+      llm_type: llama-local
       model_name: meta-llama/Llama-3.1-8B-Instruct
-      api_base_url: http://localhost:8000
-      temperature: 0
-      max_tokens: 128
     prompt_template: |
       {instruction}
       {input}
@@ -59,7 +47,19 @@ agents:
       Select one or more labels if appropriate.
       If more than one label applies, join your answers with " or " (e.g., Balling or Bead cut).
       Only answer with the label(s). No explanations.
-
+  
+  - name: critic_agent
+    agent_type: critic
+    role: critical evaluator
+    llm:
+      llm_type: llama-local
+      model_name: meta-llama/Llama-3.1-8B-Instruct
+    prompt_template: | 
+      You are a critical evaluator. Your task is to carefully review the responses, plans, or decisions made by other agents.
+      Identify any logical flaws, inconsistencies, missing considerations, or potential risks.
+      Provide constructive feedback and suggest improvements or alternative approaches if necessary.
+      Be concise, objective, and focus on ensuring high-quality, robust solutions.
+      
 task:
   name: waam_multi_task
   dataset_path:

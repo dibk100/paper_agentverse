@@ -44,7 +44,7 @@ LOCAL_LLMS_MAPPING = {
 
 # HuggingFace Transformers 기반 LLM 직접 로딩용 등록
 from agentverse.llms.llama_local import LlamaLocalLLM
-llm_registry.register("llama-local", LlamaLocalLLM)
+llm_registry.register(LlamaLocalLLM)
 
 from .base import BaseLLM, BaseChatModel, BaseCompletionModel, LLMResult
 from .openai import OpenAIChat

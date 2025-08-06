@@ -14,7 +14,12 @@ from agentverse.logging import logger
 from . import BaseExecutor, executor_registry
 import asyncio
 from agentverse.llms.utils.jsonrepair import JsonRepair
-from agentverse.llms.openai import DEFAULT_CLIENT_ASYNC as client_async
+# from agentverse.llms.openai import DEFAULT_CLIENT_ASYNC as client_async
+
+try:
+    from agentverse.llms.openai import DEFAULT_CLIENT_ASYNC
+except ImportError:
+    DEFAULT_CLIENT_ASYNC = None
 
 url = "http://127.0.0.1:8080"
 SUMMARIZE_PROMPT = """Here is the text gathered from a webpage, and a question you need to answer from the webpage. 

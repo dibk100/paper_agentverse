@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 def load_llm(llm_config: Dict):
-    llm_type = llm_config.pop("llm_type", "text-davinci-003")
+    llm_type = llm_config.pop("llm_type", "llama-local")
 
     return llm_registry.build(llm_type, **llm_config)
 
@@ -62,6 +62,7 @@ def load_environment(env_config: Dict) -> BaseEnvironment:
 
 
 def load_agent(agent_config: Dict) -> BaseAgent:
+    # print("load_agent called with config:", agent_config)
     agent_type = agent_config.pop("agent_type", "conversation")
     agent = agent_registry.build(agent_type, **agent_config)
     return agent
