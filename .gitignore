@@ -1,5 +1,6 @@
 # custom
 .env
+waam_*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
