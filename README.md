@@ -1,20 +1,28 @@
 # paper_agentverse
-update.2025/08/01   
-```
-paper_agentverse/experiments/agentverse$ agentverse-tasksolving --task tasksolving/myExperiments_test01 --tasks_dir ./tasks
-```
 yaml파일 수정이 필요함 : agent_type별 모델 설정과 프롬프트를 설정해야함.
 
 ## 📁 Folder Structure
 ```
 paper_agentverse/
-├── experiments/                        # official에서 복제
+├── experiments/                      # 공식 repo에서 복제한 실험 환경
 │   ├── agentverse/
 │   │    └── tasks/
-│   │        └── myExperiments_test01/
-│   └── .../               
+│   │         └── myExperiments/
+│   │              └── config.yaml           # Task 및 에이전트 설정 파일
+│   ├── data/
+│   │    └── Myexperiments/
+│   │         ├── waam_cls.json              # WAAM 결함 분류 데이터
+│   │         ├── waam_heat_opt.json         # 열 최적화 데이터
+│   │         ├── waam_energy_efficiency.json# 에너지 효율 데이터
+│   │         └── ...                        
+│   └── ...                             # 기타 공식 repo 파일들
 └── README.md
+
 ```
+## 📌 Notes.
+- requirements.txt 업데이트(2025.08.06)
+- waam dataset(ignore)
+
 
 ## ⚙️ agent_type
 - solver : 작업을 수행하는 주체, 분류기 같은 역할
