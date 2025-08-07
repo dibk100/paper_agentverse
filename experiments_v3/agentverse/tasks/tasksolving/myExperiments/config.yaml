@@ -1,4 +1,4 @@
-cnt_agents: &cnt_agents 4
+cnt_agents: &cnt_agents 5
 max_turn: &max_turn 3
 max_inner_turns: &max_inner_turns 0
 
@@ -7,8 +7,9 @@ agents:
     agent_type: role_assigner
     role: role_assigner
     llm:
-      llm_type: llama-local
+      llm_type: vllm
       model_name: meta-llama/Llama-3.1-8B-Instruct
+      vllm_url: http://127.0.0.1:8000/v1
     prompt_template: |
       You are a role assigner. Given the task description, assign appropriate agent roles.
 
@@ -16,8 +17,9 @@ agents:
     agent_type: solver
     role: heat optimization expert
     llm:
-      llm_type: llama-local
+      llm_type: vllm
       model_name: meta-llama/Llama-3.1-8B-Instruct
+      vllm_url: http://127.0.0.1:8000/v1
     prompt_template: |
       {instruction}
       {input}
@@ -27,8 +29,9 @@ agents:
     agent_type: solver
     role: energy efficiency expert
     llm:
-      llm_type: llama-local
+      llm_type: vllm
       model_name: meta-llama/Llama-3.1-8B-Instruct
+      vllm_url: http://127.0.0.1:8000/v1
     prompt_template: |
       {instruction}
       {input}
@@ -38,8 +41,9 @@ agents:
     agent_type: solver
     role: welding defect classifier
     llm:
-      llm_type: llama-local
+      llm_type: vllm
       model_name: meta-llama/Llama-3.1-8B-Instruct
+      vllm_url: http://127.0.0.1:8000/v1
     prompt_template: |
       {instruction}
       {input}
@@ -47,26 +51,27 @@ agents:
       Select one or more labels if appropriate.
       If more than one label applies, join your answers with " or " (e.g., Balling or Bead cut).
       Only answer with the label(s). No explanations.
-  
+
   - name: critic_agent
     agent_type: critic
     role: critical evaluator
     llm:
-      llm_type: llama-local
+      llm_type: vllm
       model_name: meta-llama/Llama-3.1-8B-Instruct
+      vllm_url: http://127.0.0.1:8000/v1
     prompt_template: | 
       You are a critical evaluator. Your task is to carefully review the responses, plans, or decisions made by other agents.
       Identify any logical flaws, inconsistencies, missing considerations, or potential risks.
       Provide constructive feedback and suggest improvements or alternative approaches if necessary.
       Be concise, objective, and focus on ensuring high-quality, robust solutions.
-      
+
 task:
   name: waam_multi_task
   dataset_path:
     heat_optimization: data/Myexperiments/waam_heat_opt.json
     energy_efficiency: data/Myexperiments/waam_energy_efficiency.json
     defect_classification: data/Myexperiments/waam_cls.json
-  description: >
+  description: | 
     Multi-task setup for WAAM domain:
     1) Heat input prediction,
     2) Energy efficiency estimation,

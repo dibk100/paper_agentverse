@@ -1,5 +1,5 @@
 # paper_agentverse
-yaml파일 수정이 필요함 : agent_type별 모델 설정과 프롬프트를 설정해야함.
+vllm에 모델이 로드 되지 않음. 어제는 문제 없던 코드가 오늘 이슈가 된 사연..
 
 ## 📁 Folder Structure
 ```
