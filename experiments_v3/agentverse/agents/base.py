@@ -64,14 +64,19 @@ class BaseAgent(BaseModel):
             **kwargs
         )
         append_prompt = Template(self.append_prompt_template).safe_substitute(**kwargs)
+        
+        # 토큰 수 계산
+        num_prepend_prompt_token = count_string_tokens(prepend_prompt, self.llm._model_name) or 0
+        num_append_prompt_token = count_string_tokens(append_prompt, self.llm._model_name) or 0
 
         # TODO: self.llm.args.model is not generalizable
+        # (update.2025.08.13) self.llm.args.model -> self.llm._model_name
         num_prepend_prompt_token = count_string_tokens(
-            prepend_prompt, self.llm.args.model
-        )
+            prepend_prompt, self.llm._model_name
+        ) or 0
         num_append_prompt_token = count_string_tokens(
-            append_prompt, self.llm.args.model
-        )
+            append_prompt, self.llm._model_name
+        ) or 0
 
         return (
             prepend_prompt,
