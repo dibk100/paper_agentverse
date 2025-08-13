@@ -35,8 +35,8 @@ LOCAL_LLMS_MAPPING = {
         "base_url": "http://localhost:5000/v1",
         "api_key": "EMPTY",
     },
-    "llama-3-8b-instruct-hf": {
-        "hf_model_name": "meta-llama/Llama-3.1-8B-Instruct",
+    "meta-llama/llama-3.1-8b-instruct": {
+        "hf_model_name": "meta-llama/llama-3.1-8b-instruct",
         "base_url": "http://localhost:8000",
         "api_key": "EMPTY",
     },

@@ -34,9 +34,33 @@ class BaseLLM(BaseModel):
         pass
 
     @abstractmethod
-    def agenerate_response(self, **kwargs) -> LLMResult:
+    def agenerate_response(self, *args, **kwargs) -> LLMResult:
         pass
+    
+    # 기본 토큰 제한 메서드 추가 : 4096 이거 수정 해야할 것 같음
+    def send_token_limit(self, model_name: str = None) -> int:
+        """
+        Return token limit based on model name.
+        If model_name is None, try to use self._model_name (subclass에서 정의됨)
+        """
+        try:
+            if model_name is None:
+                model_name = getattr(self, "_model_name", None)
+            if model_name is None:
+                return 4096  # fallback 기본값
 
+            model_name = model_name.lower()
+            # 간단 매핑 예시: 모델별 토큰 제한
+            model_token_limits = {
+                "meta-llama/llama-3.1-8b-instruct": 8192,
+                "meta-llama/llama-2-7b-chat-hf": 4096,
+                "meta-llama/llama-2-13b-chat-hf": 4096,
+                "meta-llama/llama-2-70b-chat-hf": 4096,
+            }
+
+            return model_token_limits.get(model_name, 4096)
+        except Exception:
+            return 4096
 
 class BaseChatModel(BaseLLM):
     pass
