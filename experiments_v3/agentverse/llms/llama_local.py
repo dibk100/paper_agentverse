@@ -4,12 +4,12 @@ from .base import BaseLLM
 from pydantic import PrivateAttr
 import torch
 
-@llm_registry.register("llama-local")
+@llm_registry.register("llama_local")
 class LlamaLocalLLM(BaseLLM):
     _tokenizer: object = PrivateAttr()
     _model: object = PrivateAttr()
     
-    def __init__(self, model_name="meta-llama/Llama-3-8B-Instruct", **kwargs):
+    def __init__(self, model_name="meta-llama/Llama-3.1-8B-Instruct", **kwargs):
         super().__init__(**kwargs)
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)
         self._model = AutoModelForCausalLM.from_pretrained(
@@ -72,12 +72,12 @@ from .base import BaseLLM
 from pydantic import PrivateAttr
 import torch
 
-@llm_registry.register("llama-local")
+@llm_registry.register("llama_local")
 class LlamaLocalLLM(BaseLLM):
     _tokenizer: object = PrivateAttr()
     _model: object = PrivateAttr()
 
-    def __init__(self, model_name="meta-llama/Llama-3-8B-Instruct", **kwargs):
+    def __init__(self, model_name="meta-llama/Llama-3.1-8B-Instruct", **kwargs):
         super().__init__(**kwargs)
         self._tokenizer = AutoTokenizer.from_pretrained(model_name)
         self._model = AutoModelForCausalLM.from_pretrained(

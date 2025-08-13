@@ -1,4 +1,4 @@
-cnt_agents: &cnt_agents 4
+cnt_agents: &cnt_agents 3
 max_turn: &max_turn 3
 max_inner_turns: &max_inner_turns 0
 
@@ -123,8 +123,9 @@ agents:
     memory:
       memory_type: chat_history
     llm:
-      llm_type: gpt-3.5-turbo
-      model: "gpt-3.5-turbo"
+      llm_type: llama_local
+      model: "meta-llama/Llama-3.1-8B-Instruct"
+      api_url: "http://localhost:8000"
       temperature: 0
       max_tokens: 512
     output_parser:
@@ -140,10 +141,11 @@ agents:
     memory:
       memory_type: chat_history
     llm:
-      llm_type: gpt-3.5-turbo
-      model: "gpt-3.5-turbo"
+      llm_type: llama_local
+      model: "meta-llama/Llama-3.1-8B-Instruct"
+      api_url: "http://localhost:8000"
       temperature: 0
-      max_tokens: 1024
+      max_tokens: 512
     output_parser:
       type: dummy
 
@@ -159,46 +161,47 @@ agents:
     memory:
       memory_type: chat_history
     llm:
-      llm_type: gpt-3.5-turbo
-      model: "gpt-3.5-turbo"
+      llm_type: llama_local
+      model: "meta-llama/Llama-3.1-8B-Instruct"
+      api_url: "http://localhost:8000"
       temperature: 0
-      max_tokens: 1024
+      max_tokens: 512
     output_parser:
       type: critic
 
-  - #executor_agent:
-    agent_type: executor
-    name: Dummy Executor
-    max_retry: 1000
-    memory:
-      memory_type: chat_history
-    llm:
-      llm_type: gpt-3.5-turbo
-      model: gpt-3.5-turbo
-      temperature: 0
-      max_tokens: 1024
-    output_parser:
-      type: dummy
+  # - #executor_agent:
+  #   agent_type: executor
+  #   name: Dummy Executor
+  #   max_retry: 1000
+  #   memory:
+  #     memory_type: chat_history
+  #   llm:
+  #     llm_type: llama_local
+  #     model: "meta-llama/Llama-3.1-8B-Instruct"
+  #     temperature: 0
+  #     max_tokens: 1024
+  #   output_parser:
+  #     type: dummy
 
-  - #evaluator_agent:
-    agent_type: evaluator
-    name: Evaluator
-    max_retry: 1000
-    role_description: |-
-      Evaluator
-    prepend_prompt_template: *evaluator_prepend_prompt
-    append_prompt_template: *evaluator_append_prompt
-    memory:
-      memory_type: chat_history
-    llm:
-      llm_type: gpt-3.5-turbo
-      model: gpt-3.5-turbo
-      temperature: 0.3
-      max_tokens: 1024
-    output_parser:
-      type: evaluator
-      dimensions:
-        - Comprehensiveness
-        - Detailedness
-        - Feasibility
-        - Novelty
+  # - #evaluator_agent:
+  #   agent_type: evaluator
+  #   name: Evaluator
+  #   max_retry: 1000
+  #   role_description: |-
+  #     Evaluator
+  #   prepend_prompt_template: *evaluator_prepend_prompt
+  #   append_prompt_template: *evaluator_append_prompt
+  #   memory:
+  #     memory_type: chat_history
+  #   llm:
+  #     llm_type: llama_local
+  #     model: "meta-llama/Llama-3.1-8B-Instruct"
+  #     temperature: 0.3
+  #     max_tokens: 1024
+  #   output_parser:
+  #     type: evaluator
+  #     dimensions:
+  #       - Comprehensiveness
+  #       - Detailedness
+  #       - Feasibility
+  #       - Novelty

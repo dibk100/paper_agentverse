@@ -25,7 +25,6 @@ class DescriptionAssigner(BaseRoleAssigner):
         *args,
         **kwargs,
     ) -> List[CriticAgent]:
-        task_description = self.task.description
         assert task_description != ""
         assert len(group_members) > 0
 

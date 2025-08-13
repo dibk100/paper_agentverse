@@ -6,12 +6,15 @@ import re
 import time
 import json
 import abc
-from logging import LogRecord
+# from logging import LogRecord
 from typing import Any, List
 
 from colorama import Fore, Style
 from agentverse.utils import Singleton
 
+import importlib
+_log_module = importlib.import_module("logging")
+LogRecord = _log_module.LogRecord
 
 # from autogpt.speech import say_text
 class JsonFileHandler(logging.FileHandler):

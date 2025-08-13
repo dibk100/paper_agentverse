@@ -38,11 +38,13 @@ class TaskSolving:
         agents = {}
         for i, agent_config in enumerate(task_config["agents"]):
             if agent_config.get("agent_type", "") == "critic":
-                agent = load_agent(agent_config)
-                agents[AGENT_TYPES.CRITIC] = [
-                    copy.deepcopy(agent)
-                    for _ in range(task_config.get("cnt_agents", 1) - 1)
-                ]
+            #     agent = load_agent(agent_config)
+            #     agents[AGENT_TYPES.CRITIC] = [
+            #         copy.deepcopy(agent)
+            #         for _ in range(task_config.get("cnt_agents", 1) - 1)
+            #     ]
+            # 변경: 여러 agent를 새로 생성해서 리스트 만들기
+                agents[AGENT_TYPES.CRITIC] = [load_agent(agent_config) for _ in range(task_config.get("cnt_agents", 1) - 1)]
             else:
                 agent_type = AGENT_TYPES.from_string(agent_config.get("agent_type", ""))
                 agents[agent_type] = load_agent(agent_config)
