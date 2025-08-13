@@ -28,36 +28,47 @@ class SolverAgent(BaseAgent):
         pass
 
     async def astep(
-        self, former_solution: str, advice: str, task_description: str = "", **kwargs
+        self,
+        *,
+        former_solution: str = "",
+        preliminary_solution: str = "",
+        advice: str = "No advice yet.",
+        task_description: str = "",
+        **kwargs,
     ) -> SolverMessage:
         """Asynchronous version of step"""
         logger.debug("", self.name, Fore.MAGENTA)
         # prompt = self._fill_prompt_template(
         #     former_solution, critic_opinions, advice, task_description
         # )
+        solution = preliminary_solution or former_solution
+        
         prepend_prompt, append_prompt, prompt_token = self.get_all_prompts(
-            former_solution=former_solution,
+            former_solution=solution,
             task_description=task_description,
             advice=advice,
             role_description=self.role_description,
             **kwargs,
         )
 
-        max_send_token = self.llm.send_token_limit(self.llm.args.model)
+        max_send_token = self.llm.send_token_limit(self.llm._model_name)
         max_send_token -= prompt_token
 
         history = await self.memory.to_messages(
             self.name,
             start_index=-self.max_history,
             max_send_token=max_send_token,
-            model=self.llm.args.model,
+            model=self.llm._model_name,
         )
         parsed_response = None
         for i in range(self.max_retry):
             try:
-                response = await self.llm.agenerate_response(
-                    prepend_prompt, history, append_prompt
-                )
+                full_prompt = prepend_prompt + "".join(
+                    [m.content if hasattr(m, "content") else str(m) for m in history]
+                ) + append_prompt
+
+                response = await self.llm.agenerate_response(prompt=full_prompt)
+                
                 parsed_response = self.output_parser.parse(response)
                 break
             except (KeyboardInterrupt, bdb.BdbQuit):

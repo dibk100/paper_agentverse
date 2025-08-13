@@ -55,7 +55,6 @@ class RoleAssignerAgent(BaseAgent):
                     [m.content if hasattr(m, "content") else str(m) for m in history]
                 ) + append_prompt
 
-
                 response = await self.llm.agenerate_response(prompt=full_prompt)
                 
                 if isinstance(response, str):
