@@ -12,7 +12,7 @@ from agentverse.message import RoleAssignerMessage, Message
 
 from agentverse.agents import agent_registry
 from agentverse.agents.base import BaseAgent
-
+from agentverse.llms.base import LLMResult              # issue : 'str' object has no attribute 'content'  
 
 logger = get_logger()
 
@@ -37,21 +37,30 @@ class RoleAssignerAgent(BaseAgent):
             cnt_critic_agents=cnt_critic_agents,
         )
 
-        max_send_token = self.llm.send_token_limit(self.llm.args.model)
+        # 2025-08-13 수정 : self.llm.args.model > self.llm._model_name
+        max_send_token = self.llm.send_token_limit(self.llm._model_name)
         max_send_token -= prompt_token
 
         history = await self.memory.to_messages(
             self.name,
             start_index=-self.max_history,
             max_send_token=max_send_token,
-            model=self.llm.args.model,
+            model=self.llm._model_name,
         )
         parsed_response = None
         for i in range(self.max_retry):
             try:
-                response = await self.llm.agenerate_response(
-                    prepend_prompt, history, append_prompt
-                )
+                # 아니 이게 맞아????
+                full_prompt = prepend_prompt + "".join(
+                    [m.content if hasattr(m, "content") else str(m) for m in history]
+                ) + append_prompt
+
+
+                response = await self.llm.agenerate_response(prompt=full_prompt)
+                
+                if isinstance(response, str):
+                    response = LLMResult(content=response)
+                
                 parsed_response = self.output_parser.parse(response)
                 if len(parsed_response) < cnt_critic_agents:
                     logger.warn(
