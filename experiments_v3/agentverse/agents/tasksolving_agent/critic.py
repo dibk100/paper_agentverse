@@ -13,9 +13,21 @@ from agentverse.agents import agent_registry
 from agentverse.agents.base import BaseAgent
 from agentverse.utils import AgentCriticism
 from agentverse.message import CriticMessage
+from agentverse.llms.base import LLMResult              # issue : 'str' object has no attribute 'content'  
+
 
 logger = get_logger()
 
+class CriticOutputParser:
+    def parse(self, llm_result: LLMResult) -> AgentCriticism:
+        import re
+        text = llm_result.content
+        match = re.search(r'(Action:.*?)(?:\nAction:|$)', text, re.DOTALL)
+        first_action = match.group(1).strip() if match else ""
+        
+        # AgentCriticism 객체로 반환 (기존 구조에 맞게)
+        return AgentCriticism(criticism=first_action, is_agree="Agree" in first_action)
+    
 
 @agent_registry.register("critic")
 class CriticAgent(BaseAgent):
@@ -54,6 +66,8 @@ class CriticAgent(BaseAgent):
 
     async def astep(
         self,
+        *
+        ,
         preliminary_solution: str,
         advice: str = "No advice yet.",
         task_description: str = "",
@@ -85,10 +99,16 @@ class CriticAgent(BaseAgent):
         parsed_response: Union[AgentCriticism, None] = None
         for i in range(self.max_retry):
             try:
-                response = await self.llm.agenerate_response(
-                    prepend_prompt, history, append_prompt
-                )
-                parsed_response = self.output_parser.parse(response)
+                # 아니 이게 맞아????
+                full_prompt = prepend_prompt + "".join(
+                    [m.content if hasattr(m, "content") else str(m) for m in history]
+                ) + append_prompt
+
+                response = await self.llm.agenerate_response(prompt=full_prompt)
+                
+                if isinstance(response, str):
+                    response = LLMResult(content=response)
+                parsed_response = CriticOutputParser().parse(response)          # 파서 이슈
                 break
             except (KeyboardInterrupt, bdb.BdbQuit):
                 raise

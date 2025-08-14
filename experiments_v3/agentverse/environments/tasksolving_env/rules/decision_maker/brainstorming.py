@@ -57,12 +57,21 @@ class BrainstormingDecisionMaker(BaseDecisionMaker):
             logger.info(f"[{review.sender}]: {review.content}", Fore.YELLOW)
 
         # Solver/첫 번째 에이전트 호출
-        result = await agents[0].astep(
-            preliminary_solution=previous_plan,
-            advice=advice,
-            task_description=task_description,
-            **kwargs
-        )
+        first_agent = agents[0]
+        if hasattr(first_agent, "preliminary_solution"):  # CriticAgent 등
+            result = await first_agent.astep(
+                preliminary_solution=previous_plan,
+                advice=advice,
+                task_description=task_description,
+                **kwargs
+            )
+        else:  # ConversationAgent, Solver 등
+            result = await first_agent.astep(
+                previous_plan,
+                advice,
+                task_description,
+                **kwargs
+            )
 
         # 메모리 초기화 후 summary 브로드캐스트
         for agent in agents:

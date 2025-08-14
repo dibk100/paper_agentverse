@@ -1,86 +1,210 @@
-cnt_agents: &cnt_agents 5
+cnt_agents: &cnt_agents 3
 max_turn: &max_turn 3
 max_inner_turns: &max_inner_turns 0
 
-agents:
-  - name: role_assigner_agent
-    agent_type: role_assigner
-    role: role_assigner
-    llm:
-      llm_type: vllm
-      model_name: meta-llama/Llama-3.1-8B-Instruct
-      vllm_url: http://127.0.0.1:8000/v1
-    prompt_template: |
-      You are a role assigner. Given the task description, assign appropriate agent roles.
+task_description: |-
+  Generate ideas for defect analysis and energy optimization in the WAAM additive manufacturing industry.
+  User input: manufacturing parameters such as heat, energy, and speed.
+  Goals:
+    1. Defect prediction (classification)
+    2. Deriving optimal energy values
+    3. Providing decision-support information
 
-  - name: heat_opt_agent
-    agent_type: solver
-    role: heat optimization expert
-    llm:
-      llm_type: vllm
-      model_name: meta-llama/Llama-3.1-8B-Instruct
-      vllm_url: http://127.0.0.1:8000/v1
-    prompt_template: |
-      {instruction}
-      {input}
-      Only output the numeric value of heat input in the format: Heat input is xxx.xxx.
+prompts:
+  role_assigner_prepend_prompt: &role_assigner_prepend_prompt |-
 
-  - name: energy_eff_agent
-    agent_type: solver
-    role: energy efficiency expert
-    llm:
-      llm_type: vllm
-      model_name: meta-llama/Llama-3.1-8B-Instruct
-      vllm_url: http://127.0.0.1:8000/v1
-    prompt_template: |
-      {instruction}
-      {input}
-      Only output the numeric value of energy in the format: Energy is xxx.xxx.
+  role_assigner_append_prompt: &role_assigner_append_prompt |-
+    You are the leader of an expert group in the WAAM additive manufacturing industry. You need to perform the following task:
+    
+    ${task_description}
+    
+    You can recruit ${cnt_critic_agents} expert team members from different regions or fields.
+    Which experts will you recruit to achieve defect prediction, energy optimization, and decision support?
+    
+    Output format example:
+    1. A materials engineer specialized in WAAM process optimization
+    2. A data scientist skilled in manufacturing data analysis
+    3. A mechanical engineer experienced in industrial robot control
+    ...
+    
+    ${advice}
+    You do not need to provide reasons.
 
-  - name: defect_cls_agent
-    agent_type: solver
-    role: welding defect classifier
-    llm:
-      llm_type: vllm
-      model_name: meta-llama/Llama-3.1-8B-Instruct
-      vllm_url: http://127.0.0.1:8000/v1
-    prompt_template: |
-      {instruction}
-      {input}
-      Possible labels: Balling, Bead cut, Discontinuity, Humping, Lack of fusion, Normal.
-      Select one or more labels if appropriate.
-      If more than one label applies, join your answers with " or " (e.g., Balling or Bead cut).
-      Only answer with the label(s). No explanations.
+  solver_prepend_prompt: &solver_prepend_prompt |-
+    You are a summarizer.
+    Your task is to categorize and summarize the ideas from the chat history.
+    Please prepend each idea with the name of the speaker.
 
-  - name: critic_agent
-    agent_type: critic
-    role: critical evaluator
-    llm:
-      llm_type: vllm
-      model_name: meta-llama/Llama-3.1-8B-Instruct
-      vllm_url: http://127.0.0.1:8000/v1
-    prompt_template: | 
-      You are a critical evaluator. Your task is to carefully review the responses, plans, or decisions made by other agents.
-      Identify any logical flaws, inconsistencies, missing considerations, or potential risks.
-      Provide constructive feedback and suggest improvements or alternative approaches if necessary.
-      Be concise, objective, and focus on ensuring high-quality, robust solutions.
+    The discussion question is: ${task_description}. Below is the chat history:
 
-task:
-  name: waam_multi_task
-  dataset_path:
-    heat_optimization: data/Myexperiments/waam_heat_opt.json
-    energy_efficiency: data/Myexperiments/waam_energy_efficiency.json
-    defect_classification: data/Myexperiments/waam_cls.json
-  description: | 
-    Multi-task setup for WAAM domain:
-    1) Heat input prediction,
-    2) Energy efficiency estimation,
-    3) Welding defect classification.
+  solver_append_prompt: &solver_append_prompt |-
+    # Output format
+    1. (Speaker1): (Ideas of Speaker 1 in a single line)
+    2. (Speaker2): (Ideas of Speaker 2 in a single line)
+    3. (Speaker3): (Ideas of Speaker 3 in a single line)
+    ...
 
-evaluator:
-  name: accuracy
+    Merge all ideas from the same speaker into a single item.
+
+  critic_prepend_prompt: &critic_prepend_prompt |-
+    You are ${role_description}. You are in a discussion group with the goal of ${task_description}.
+
+  critic_append_prompt: &critic_append_prompt |-
+    The group is now asking for your opinion. Based on your expertise,
+    do you think this solution perfectly achieves the three goals of defect prediction (classification), energy optimization, and decision support?
+    Or do you have ideas for improvement?
+    
+    - If you think it is perfect, use the following format:
+    Action: Agree
+    Action Input: Agree.
+    (Do not output your reason for agreeing!)
+
+    - If you want to give additional ideas to improve or contradict it, use the following format:
+    Action: Disagree
+    Action Input: (what you want to say in one line)
+    
+    P.S. Always remember you are ${role_description}!
+    
+    If no prior solutions or critiques are given, you can freely output your ideas, but they must be based on your role's expertise.
+    Ideas should be specific and detailed, not just general opinions.
+
+  evaluator_prepend_prompt: &evaluator_prepend_prompt |-
+
+  evaluator_append_prompt: &evaluator_append_prompt |-
+    Your task is to evaluate the ideas in the solution.
+ 
+    The goal is to ${task_description}.
+    
+    Please rate the ideas in the following dimensions:
+        1. Comprehensiveness: Do they address all three goals—defect prediction, energy optimization, and decision support?
+        2. Detailedness: Are they detailed enough to be implemented?
+        3. Feasibility: Are they reasonable and practical?
+        4. Novelty: Are they creative and innovative?
+    
+    0 means the idea is like a randomly generated idea,
+    10 means the idea is perfect in that aspect.
+    
+    On the fifth line, give your detailed advice for the solution generators.
+    You can also give advice to HR staff on what experts they should recruit.
+    Only state the drawbacks of the ideas; there is no need to start with compliments.
+    
+    # Output format
+    You must output in the following format:
+    1. Comprehensiveness: (a score between 0 and 9)
+    2. Detailedness: (a score between 0 and 9)
+    3. Feasibility: (a score between 0 and 9)
+    4. Novelty: (a score between 0 and 9)
+    5. Advice: (your advice in one line)
+    
+    Here is the content you have to evaluate:
+    ${solution}
+
+name: pipeline
 
 environment:
-  name: task_solving_env
   env_type: task-basic
-  max_turns: *max_turn
+  max_turn: *max_turn
+  rule:
+    role_assigner:
+      type: role_description
+      cnt_agents: *cnt_agents
+    decision_maker:
+      type: brainstorming
+      max_inner_turns: *max_inner_turns
+    executor:
+      type: none
+    evaluator:
+      type: basic
+
+agents:
+  - #role_assigner_agent:
+    agent_type: role_assigner
+    name: role assigner
+    max_retry: 1000
+    prepend_prompt_template: *role_assigner_prepend_prompt
+    append_prompt_template: *role_assigner_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: llama_local
+      model: "meta-llama/Llama-3.1-8B-Instruct"
+      api_url: "http://localhost:8000"
+      temperature: 0
+      max_tokens: 512
+    output_parser:
+      type: role_assigner
+
+  - #solver_agent:
+    agent_type: solver
+    name: Summarizer
+    max_retry: 1000
+    max_history: 5
+    prepend_prompt_template: *solver_prepend_prompt
+    append_prompt_template: *solver_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: llama_local
+      model: "meta-llama/Llama-3.1-8B-Instruct"
+      api_url: "http://localhost:8000"
+      temperature: 0
+      max_tokens: 512
+    output_parser:
+      type: dummy
+
+  - #critic_agents:
+    agent_type: critic
+    name: Reviewer
+    max_retry: 1000
+    max_history: 5
+    role_description: |-
+      Waiting to be assigned.
+    prepend_prompt_template: *critic_prepend_prompt
+    append_prompt_template: *critic_append_prompt
+    memory:
+      memory_type: chat_history
+    llm:
+      llm_type: llama_local
+      model: "meta-llama/Llama-3.1-8B-Instruct"
+      api_url: "http://localhost:8000"
+      temperature: 0
+      max_tokens: 512
+    output_parser:
+      type: critic
+
+  # - #executor_agent:
+  #   agent_type: executor
+  #   name: Dummy Executor
+  #   max_retry: 1000
+  #   memory:
+  #     memory_type: chat_history
+  #   llm:
+  #     llm_type: llama_local
+  #     model: "meta-llama/Llama-3.1-8B-Instruct"
+  #     temperature: 0
+  #     max_tokens: 1024
+  #   output_parser:
+  #     type: dummy
+
+  # - #evaluator_agent:
+  #   agent_type: evaluator
+  #   name: Evaluator
+  #   max_retry: 1000
+  #   role_description: |-
+  #     Evaluator
+  #   prepend_prompt_template: *evaluator_prepend_prompt
+  #   append_prompt_template: *evaluator_append_prompt
+  #   memory:
+  #     memory_type: chat_history
+  #   llm:
+  #     llm_type: llama_local
+  #     model: "meta-llama/Llama-3.1-8B-Instruct"
+  #     temperature: 0.3
+  #     max_tokens: 1024
+  #   output_parser:
+  #     type: evaluator
+  #     dimensions:
+  #       - Comprehensiveness
+  #       - Detailedness
+  #       - Feasibility
+  #       - Novelty

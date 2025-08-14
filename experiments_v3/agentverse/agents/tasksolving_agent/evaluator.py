@@ -12,6 +12,7 @@ from agentverse.message import EvaluatorMessage, Message
 
 from agentverse.agents import agent_registry
 from agentverse.agents.base import BaseAgent
+from agentverse.llms.base import LLMResult              # issue : 'str' object has no attribute 'content'  
 
 
 logger = get_logger()
@@ -59,9 +60,15 @@ class EvaluatorAgent(BaseAgent):
         parsed_response = None
         for i in range(self.max_retry):
             try:
-                response = await self.llm.agenerate_response(
-                    prepend_prompt, history, append_prompt
-                )
+                # 아니 이게 맞아????
+                full_prompt = prepend_prompt + "".join(
+                    [m.content if hasattr(m, "content") else str(m) for m in history]
+                ) + append_prompt
+
+                response = await self.llm.agenerate_response(prompt=full_prompt)
+                
+                if isinstance(response, str):
+                    response = LLMResult(content=response)
                 parsed_response = self.output_parser.parse(response)
                 break
             except (KeyboardInterrupt, bdb.BdbQuit):

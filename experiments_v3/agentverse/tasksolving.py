@@ -8,6 +8,8 @@ from agentverse.environments.tasksolving_env.basic import BasicEnvironment
 from agentverse.initialization import load_agent, load_environment, prepare_task_config
 from agentverse.utils import AGENT_TYPES
 
+import torch
+torch.cuda.empty_cache()
 
 openai_logger = logging.getLogger("openai")
 openai_logger.setLevel(logging.WARNING)

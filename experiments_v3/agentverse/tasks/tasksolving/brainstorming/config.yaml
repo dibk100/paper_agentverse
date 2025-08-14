@@ -45,21 +45,18 @@ prompts:
     You are ${role_description}. You are in a discussion group, aiming to ${task_description}.
 
   critic_append_prompt: &critic_append_prompt |-
-    Now the group is asking your opinion about it. Based on your knowledge in your field, do you agree that this solution can perfectly solve the problem? Or do you have any ideas to improve it?
-    
-    - If you thinks it is perfect, use the following output format:
-    Action: Agree
-    Action Input: Agree.
-    (Do not output your reason for agreeing!)
+    Respond in exactly one of the following formats, nothing else:
+    1. If perfect:
+       Action: Agree
+       Action Input: Agree.
+    2. If not perfect:
+       Action: Disagree
+       Action Input: (your improvement idea in one line)
 
-    - If you want to give complemented opinions to improve it or to contradict with it, use the following output format:
-    Action: Disagree
-    Action Input: (what you want to say in one line)
-    
-    P.S. Always remember you are ${role_description}!
-    
-    If no former solution or critic opinions are given, you can just disagree and output your idea freely, based on the expertise of your role.
-    Remember, the ideas should be specific and detailed enough, not just general opinions.
+    Do not write any explanations, steps, lists, bullet points, or introductions before the "Action:" line.
+    Do not output more than one "Action" block.
+    Your answer will be parsed by a machine — if you add anything beyond the format, your answer will be discarded.
+    Stay strictly in the role of ${role_description}.
 
   evaluator_prepend_prompt: &evaluator_prepend_prompt |-
 
