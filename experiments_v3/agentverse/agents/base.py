@@ -36,8 +36,8 @@ class BaseAgent(BaseModel):
         pass
 
     @abstractmethod
-    def astep(self, env_description: str = "") -> Message:
-        """Asynchronous version of step"""
+    def astep(self, **kwargs) -> Message:
+        """Asynchronous version of step (flexible interface) - 2025.08.29"""
         pass
 
     @abstractmethod

@@ -1,7 +1,8 @@
-# paper_agentverse
-기존 코드가 openAPI기반이라 openSource 모델 활용해서 실험하려니 코드 수정할 것이 너무 많다.   
-각 폴더별 py파일부터 util파일 안의 모든 것 까지.. 진짜 살려줘   
-(2025-08-13) review = await agent.astep 이거 이슈 여전히 미해결(decision_maker/brainstorming.py) 여기임.
+# paper_agentverse  
+(2025-08-13) review = await agent.astep 해결?(tasksolveing_env/rules/decision_maker/brainstorming.py) 여기임.
+(2025-08-14) review = await agent.astep 이거 이슈 여전히 미해결(agents/tasksolving_agent/critic.py, evaluator.py) --> (tasksolveing_env/rules/decision_maker/brainstorming.py) 여기서 solver 수정함. 
+(2025-08-26) agents 파일 수정 중.
+(2025-09-01) 오류 날 때 마다 모듈 하나씩 수정 작업중.
 
 ## 📁 Folder Structure
 ```
@@ -39,3 +40,14 @@ paper_agentverse/
 - executor : 실행 담당
 - evaluator : 평가 담당 (정확도 평가 등)
 - manager : 관리, 조율 역할
+
+```
+agents/tasksolving_agent/
+├─ __init__.py
+├─ critic.py
+├─ evaluator.py      
+├─ executor.py
+├─ manager.py
+├─ role_assigner.py
+└─ solver.py
+```

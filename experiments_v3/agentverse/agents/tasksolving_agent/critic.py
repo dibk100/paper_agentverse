@@ -114,7 +114,7 @@ class CriticAgent(BaseAgent):
                 raise
             except Exception as e:
                 logger.error(e)
-                logger.warn("Retrying...")
+                logger.warn("critic : Retrying...")
                 continue
 
         if parsed_response is None:

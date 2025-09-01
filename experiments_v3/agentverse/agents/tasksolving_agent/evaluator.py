@@ -75,7 +75,7 @@ class EvaluatorAgent(BaseAgent):
                 raise
             except Exception as e:
                 logger.error(e)
-                logger.warn("Retrying...")
+                logger.warn("evaluator : Retrying...")
                 continue
 
         if parsed_response is None:

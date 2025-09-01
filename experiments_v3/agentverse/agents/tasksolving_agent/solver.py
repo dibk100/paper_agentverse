@@ -75,7 +75,7 @@ class SolverAgent(BaseAgent):
                 raise
             except Exception as e:
                 logger.error(e)
-                logger.warn("Retrying...")
+                logger.warn("solver : Retrying...")
                 continue
 
         if parsed_response is None:

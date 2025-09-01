@@ -65,14 +65,14 @@ class RoleAssignerAgent(BaseAgent):
                     logger.warn(
                         f"Number of generate roles ({len(parsed_response)}) and number of group members ({cnt_critic_agents}) do not match."
                     )
-                    logger.warn("Retrying...")
+                    logger.warn("role_assigner : Retrying...")
                     continue
                 break
             except (KeyboardInterrupt, bdb.BdbQuit):
                 raise
             except Exception as e:
                 logger.error(e)
-                logger.warn("Retrying...")
+                logger.warn("role_assigner_e : Retrying...")
                 continue
 
         if parsed_response is None:

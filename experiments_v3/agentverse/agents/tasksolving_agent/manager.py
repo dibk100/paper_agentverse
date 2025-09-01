@@ -65,7 +65,7 @@ class ManagerAgent(BaseAgent):
                 raise
             except Exception as e:
                 logger.error(e)
-                logger.warn("Retrying...")
+                logger.warn("manager : Retrying...")
                 continue
         return candidate_critic_opinion
 
